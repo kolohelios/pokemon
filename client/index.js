@@ -1,28 +1,27 @@
-/* global pokedex:true */
-/* jshint camelcase:false */
+/* global pokedex: true */
+/* eslint camelcase: false */
 
 'use strict';
 
 (function(){
   $(document).ready(init);
 
+  var attributes = ['attack', 'defense', 'exp', 'hp'];
+
   function init(){
     drawPokedex();
     $('#pokedex').on('click', '.pokemon:not(.filled)', getPokemon);
     $('#pokedex').on('click', '.filled', pickPlayers);
-    $('#clear').click(clearPokemon);
     $('#fight').click(fight);
   }
 
   function pickPlayers(){
-    if($(this).hasClass('p1')){
-      $(this).removeClass('p1').addClass('p2');
-    }
-    else if($(this).hasClass('p2')){
-      $(this).removeClass('p2');
-    }
-    else{
+    if($('.p1').length === 0){
       $(this).addClass('p1');
+    }else{
+      $(this).addClass('p2');
+      $('#pokedex').off('click');
+      clearPokemon();
     }
   }
 
@@ -32,10 +31,10 @@
 
     var p1 = {}, p2 = {};
 
-    ['attack', 'defense', 'exp', 'hp'].map(function(attr, i){
+    attributes.map(function(attr, i){
       p1[attr] = $('.p1').find('li:nth-child(' + (i + 1) + ')').text().split(':')[1] * 1;
     });
-    ['attack', 'defense', 'exp', 'hp'].map(function(attr, i){
+    attributes.map(function(attr, i){
       p2[attr] = $('.p2').find('li:nth-child(' + (i + 1) + ')').text().split(':')[1] * 1;
     });
 
@@ -47,9 +46,11 @@
 
     if(p1.hp <= 0){
       $p1.remove();
+      $('#fight').off('click');
     }
     if(p2.hp <= 0){
       $p2.remove();
+      $('#fight').off('click');
     }
   }
 
@@ -73,12 +74,10 @@
     pokedex.pokemon.forEach(function(pokemonObj){
       var $outerDiv = $('<div>');
       var $name = $('<div>');
-      var $image = $('<div>');
-      var $stats = $('<div>');
+      var $image = $('<div class="image">');
+      var $stats = $('<div class="stats">');
       $outerDiv.addClass('pokemon').attr('data-uri', pokemonObj.resource_uri);
       $name.addClass('name').text(pokemonObj.name);
-      $image.addClass('image');
-      $stats.addClass('stats');
 
       var $ul = $('<ul>');
       $stats.append($ul);
@@ -96,7 +95,6 @@
       $self.addClass('filled');
 
       var $ul = $self.find('ul');
-      var attributes = ['attack', 'defense', 'exp', 'hp'];
 
       var $lis = attributes.map(function(attribute){
         return '<li>' + attribute + ': ' + response[attribute] + '</li>';
@@ -112,7 +110,6 @@
           $self.children('.image').css('background-image', 'url(' + domain + response.image + ')');
         });
       });
-
     });
   }
 })();
